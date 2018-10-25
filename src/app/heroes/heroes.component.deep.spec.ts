@@ -34,11 +34,37 @@ describe('HeroesComponent (deep tests)', ()=>{
         fixture = TestBed.createComponent(HeroesComponent)
         mockHeroService.getHeroes.and.returnValue(of(HEROES));
 
-        fixture.detectChanges();
+        
     })
 
-    it('should be true',()=>{
-        expect(true).toBe(true);
+    it('should render each hero as a hero component',()=>{
+        //arrange 
+        mockHeroService.getHeroes.and.returnValue(of(HEROES));
+        //act run ngOnInit
+        fixture.detectChanges();
+        //assert
+       const heroComponentsDEs = fixture.debugElement.queryAll(By.directive(HeroComponent))
+       expect(heroComponentsDEs.length).toEqual(3);
+       for(let i=0; i < heroComponentsDEs.length; i++){
+        expect(heroComponentsDEs[i].componentInstance.hero).toEqual(HEROES[i]);
+       }
+    });
+
+    it(`should call HeroService.deleteHero 
+    when the hero components delete button is clicked`,()=>{
+        spyOn(fixture.componentInstance, 'delete')
+        mockHeroService.getHeroes.and.returnValue(of(HEROES));
+
+        //ngOnenit
+        fixture.detectChanges();
+
+        //We are calling HeroComponent by directive because a component is a specialized subclass of a directive
+        const heroComponents = fixture.debugElement.queryAll(By.directive(HeroComponent));
+        heroComponents[0].query(By.css('button'))
+        //triggerEventHandler takes event name and object for event as paramaters
+        .triggerEventHandler('click', {stopPropagation:()=>{}});
+
+        expect(fixture.componentInstance.delete).toHaveBeenCalledWith(HEROES[0]);
     });
 
 });
